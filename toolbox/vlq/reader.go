@@ -8,10 +8,14 @@ package vlq
 
 import (
 	"bytes"
+	"fmt"
 )
 
+// The maximum allowed VLQ value as defined by the spec
+const MAX = 0x0FFFFFFF
+
 // Read reads a single VLQ value from a bytes.Reader
-func Read(buffer *bytes.Reader) (n int32, bytesRead uint32, err error) {
+func Read(buffer *bytes.Reader) (n int, bytesRead int, err error) {
 
 	mada := true
 	for mada {
@@ -28,18 +32,18 @@ func Read(buffer *bytes.Reader) (n int32, bytesRead uint32, err error) {
 		bytesRead++
 
 		// add the 7 LSBs to the result
-		n ^= int32(b & 0x7f)
+		n ^= int(b & 0x7f)
 
 		// if the MSB is 1, prepare for the next iteration
 		if mada = 1 == b>>7; mada {
 			n <<= 7
 		}
 
-		// simple check for overflow
-		if n < 0 {
+		// check for exceeding max value defined in spec
+		if n > MAX {
 			return 0, bytesRead, &VLQReadError{
 				originalBytes(buffer),
-				"exceeded maximum vlq value [0x0FFFFFFF]",
+				fmt.Sprintf("exceeded maximum vlq value [%d]", MAX),
 				nil}
 		}
 	}
@@ -47,7 +51,7 @@ func Read(buffer *bytes.Reader) (n int32, bytesRead uint32, err error) {
 	return
 }
 
-// rewinds the buffer and returns all bytes in it
+// Rewinds the buffer and returns all bytes in it
 func originalBytes(buffer *bytes.Reader) (out []byte) {
 
 	out = make([]byte, buffer.Size())

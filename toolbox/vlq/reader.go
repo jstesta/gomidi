@@ -15,7 +15,7 @@ import (
 const MAX = 0x0FFFFFFF
 
 // Read reads a single VLQ value from a bytes.Reader
-func Read(buffer *bytes.Reader) (n int, bytesRead int, err error) {
+func ReadVLQ(buffer *bytes.Reader) (n int, bytesRead int, err error) {
 
 	mada := true
 	for mada {

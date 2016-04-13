@@ -29,7 +29,7 @@ func TestReadOK(t *testing.T) {
 	for _, tt := range successTests {
 		buffer := bytes.NewReader(tt.n)
 
-		actual, read, err := vlq.Read(buffer)
+		actual, read, err := vlq.ReadVLQ(buffer)
 		if err != nil {
 			t.Errorf("Read: %s", err.Error())
 		}
@@ -47,7 +47,7 @@ func TestReadValueTooLarge(t *testing.T) {
 	tt := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
 	buffer := bytes.NewReader(tt)
 
-	n, _, err := vlq.Read(buffer)
+	n, _, err := vlq.ReadVLQ(buffer)
 	if err == nil {
 		t.Errorf("Read: expected overflow error but succeeded, input=%d, n=%d", tt, n)
 	}
@@ -58,7 +58,7 @@ func TestUnexpectedEndOfInput(t *testing.T) {
 	tt := []byte{0xff}
 	buffer := bytes.NewReader(tt)
 
-	n, _, err := vlq.Read(buffer)
+	n, _, err := vlq.ReadVLQ(buffer)
 	if err == nil {
 		t.Errorf("Read: expected unexpected end of input error but succeeded, input=%d, n=%d", tt, n)
 	}

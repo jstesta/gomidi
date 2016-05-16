@@ -2,7 +2,7 @@ package vlq_test
 
 import (
 	"bytes"
-	"github.com/jstesta/gomidi/util/vlq"
+	"github.com/jstesta/gomidi/vlq"
 	"testing"
 )
 

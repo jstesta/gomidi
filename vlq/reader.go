@@ -8,9 +8,9 @@ package vlq
 
 import (
 	"bufio"
-	"io"
 	"errors"
 	"fmt"
+	"io"
 )
 
 // The maximum allowed VLQ value as defined by the spec

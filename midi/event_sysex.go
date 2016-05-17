@@ -7,10 +7,6 @@ type SysexEvent struct {
 	data      []byte
 }
 
-func (e *SysexEvent) Type() EventType {
-	return SYSEX
-}
-
 func (e *SysexEvent) DeltaTime() int {
 	return e.deltaTime
 }
@@ -20,8 +16,7 @@ func (e *SysexEvent) Data() []byte {
 }
 
 func (e *SysexEvent) String() string {
-	return fmt.Sprintf("SysexEvent [Type=%s, DeltaTime=%d, Data=%d]",
-		e.Type(),
+	return fmt.Sprintf("SysexEvent [DeltaTime=%d, Data=%d]",
 		e.DeltaTime(),
 		e.Data())
 }

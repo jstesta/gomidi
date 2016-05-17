@@ -11,12 +11,6 @@ type Track struct {
 func (t *Track) String() string {
 
 	return fmt.Sprintf(
-		"Track [Type=%s, Events=%v]",
-		t.Type(),
+		"Track [Events=%v]",
 		t.Events)
-}
-
-func (h Track) Type() ChunkType {
-
-	return MTRK
 }

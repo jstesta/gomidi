@@ -8,10 +8,6 @@ type MidiEvent struct {
 	data      []byte
 }
 
-func (e *MidiEvent) Type() EventType {
-	return MIDI
-}
-
 func (e *MidiEvent) DeltaTime() int {
 	return e.deltaTime
 }
@@ -25,8 +21,7 @@ func (e *MidiEvent) Status() byte {
 }
 
 func (e *MidiEvent) String() string {
-	return fmt.Sprintf("MidiEvent [Type=%s, Status=%X, DeltaTime=%d, Data=%d]",
-		e.Type(),
+	return fmt.Sprintf("MidiEvent [Status=%X, DeltaTime=%d, Data=%d]",
 		e.Status(),
 		e.DeltaTime(),
 		e.Data())

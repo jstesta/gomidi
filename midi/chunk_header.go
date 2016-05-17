@@ -14,15 +14,9 @@ type Header struct {
 func (h *Header) String() string {
 
 	return fmt.Sprintf(
-		"Header [Type=%s, Length=%v, Format=%v, NumberOfTracks=%v, Division=%v]",
-		h.Type(),
+		"Header [Length=%v, Format=%v, NumberOfTracks=%v, Division=%v]",
 		h.Length,
 		h.Format,
 		h.NumberOfTracks,
 		h.Division)
-}
-
-func (h Header) Type() ChunkType {
-
-	return MTHD
 }

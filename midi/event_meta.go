@@ -8,10 +8,6 @@ type MetaEvent struct {
 	data      []byte
 }
 
-func (e *MetaEvent) Type() EventType {
-	return META
-}
-
 func (e *MetaEvent) DeltaTime() int {
 	return e.deltaTime
 }
@@ -29,13 +25,12 @@ func (e *MetaEvent) String() string {
 	var format string
 	switch {
 	case 0x1 <= e.MetaType() && e.MetaType() <= 0x7:
-		format = "MetaEvent [Type=%s, MetaType=%X, DeltaTime=%d, Data=%s]"
+		format = "MetaEvent [MetaType=%X, DeltaTime=%d, Data=%s]"
 	default:
-		format = "MetaEvent [Type=%s, MetaType=%X, DeltaTime=%d, Data=%d]"
+		format = "MetaEvent [MetaType=%X, DeltaTime=%d, Data=%d]"
 	}
 
 	return fmt.Sprintf(format,
-		e.Type(),
 		e.MetaType(),
 		e.DeltaTime(),
 		e.Data())

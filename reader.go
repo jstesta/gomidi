@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/jstesta/gomidi/chunk"
+	"github.com/jstesta/gomidi/parser"
 	"github.com/jstesta/gomidi/midi"
 )
 
@@ -27,7 +27,7 @@ func ReadMidiFromBytes(b []byte) (m *midi.Midi, err error) {
 
 func ReadMidiFromReader(r io.Reader) (m *midi.Midi, err error) {
 
-	c, err := chunk.ReadChunk(r)
+	c, err := parser.ReadChunk(r)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func ReadMidiFromReader(r io.Reader) (m *midi.Midi, err error) {
 		tracks = make([]midi.Track, 0, header.NumberOfTracks)
 		var i uint16
 		for i = 0; i < header.NumberOfTracks; i++ {
-			c, err := chunk.ReadChunk(r)
+			c, err := parser.ReadChunk(r)
 			if err != nil {
 				return nil, err
 			}

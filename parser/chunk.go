@@ -1,4 +1,4 @@
-package chunk
+package parser
 
 import (
 	"encoding/binary"

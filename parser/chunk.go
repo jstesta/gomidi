@@ -22,12 +22,12 @@ func ReadChunk(b io.Reader) (c midi.Chunk, err error) {
 	switch string(chunkType) {
 
 	case MTHD_CHUNK_LITERAL:
-		c, err = ReadHeaderChunk(b)
+		c, err = readHeaderChunk(b)
 		log.Printf("chunk.ReadChunk parsed Header chunk: %v, err: %v", c, err)
 		return
 
 	case MTRK_CHUNK_LITERAL:
-		c, err = ReadTrackChunk(b)
+		c, err = readTrackChunk(b)
 		log.Printf("chunk.ReadChunk parsed Track chunk: %v, err: %v", c, err)
 		return
 

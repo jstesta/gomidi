@@ -10,7 +10,7 @@ import (
 	"github.com/jstesta/gomidi/vlq"
 )
 
-func ReadTrackChunk(r io.Reader) (c midi.Chunk, err error) {
+func readTrackChunk(r io.Reader) (c midi.Chunk, err error) {
 
 	var length uint32
 	err = binary.Read(r, binary.BigEndian, &length)

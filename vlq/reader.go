@@ -7,7 +7,6 @@ See: https://www.midi.org/images/downloads/complete_midi_96-1-3.pdf Standard MID
 package vlq
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -19,14 +18,15 @@ const MAX = 0x0FFFFFFF
 // Read reads a single VLQ value from a bytes.Reader
 func ReadVLQ(r io.Reader) (n int, read int, err error) {
 
-	buffer := bufio.NewReader(r)
 	mada := true
 	for mada {
 		// read the next byte
-		b, err := buffer.ReadByte()
+		var buff [1]byte
+		_, err = r.Read(buff[:])
 		if err != nil {
 			return 0, read, err
 		}
+		b := buff[0]
 
 		// increment read bytes counter
 		read++

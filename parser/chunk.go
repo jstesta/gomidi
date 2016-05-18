@@ -3,7 +3,6 @@ package parser
 import (
 	"encoding/binary"
 	"io"
-	"log"
 
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
@@ -33,9 +32,8 @@ func ReadChunk(b io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
 		return
 
 	default:
-		log.Print("chunk.ReadChunk found alien chunk... skipping")
-		// TODO: skip alien chunk data
-	}
+		err = readAlienChunk(b, cfg)
+		return nil, err
 
-	return
+	}
 }

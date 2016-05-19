@@ -21,8 +21,8 @@ func ReadVLQ(r io.Reader) (n int, read int, err error) {
 	mada := true
 	for mada {
 		// read the next byte
-		var buff [1]byte
-		_, err = r.Read(buff[:])
+		buff := []byte{0}
+		_, err = io.ReadFull(r, buff)
 		if err != nil {
 			return 0, read, err
 		}

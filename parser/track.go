@@ -33,8 +33,8 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error)
 		}
 		bytesRead += br
 
-		var b [1]byte
-		_, err = r.Read(b[:])
+		b := []byte{0}
+		_, err = io.ReadFull(r, b)
 		if err != nil {
 			return nil, err
 		}
@@ -95,7 +95,7 @@ func readSysexEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Ev
 
 	ctx.Log("datalen", length)
 	data := make([]byte, length)
-	_, err = r.Read(data)
+	_, err = io.ReadFull(r, data)
 	bytesRead += length
 
 	e = midi.NewSysexEvent(deltaTime, data)
@@ -107,8 +107,8 @@ func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Eve
 
 	ctx := cfg.LogContext.With("reader", "meta")
 
-	var b [1]byte
-	_, err = r.Read(b[:])
+	b := []byte{0}
+	_, err = io.ReadFull(r, b)
 	if err != nil {
 		return
 	}
@@ -124,7 +124,7 @@ func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Eve
 
 	ctx.Log("datalen", length)
 	data := make([]byte, length)
-	_, err = r.Read(data)
+	_, err = io.ReadFull(r, data)
 	bytesRead += length
 
 	e = midi.NewMetaEvent(deltaTime, metaEventType, data)
@@ -140,7 +140,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, cfg
 
 	case 0x8, 0x9, 0xA, 0xB, 0xE:
 		data := make([]byte, 2)
-		_, err = r.Read(data)
+		_, err = io.ReadFull(r, data)
 		if err != nil {
 			return
 		}
@@ -149,7 +149,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, cfg
 
 	case 0xC, 0xD:
 		data := make([]byte, 1)
-		_, err = r.Read(data)
+		_, err = io.ReadFull(r, data)
 		if err != nil {
 			return
 		}

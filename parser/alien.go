@@ -15,6 +15,6 @@ func readAlienChunk(r io.Reader, cfg cfg.GomidiConfig) (err error) {
 	}
 
 	data := make([]byte, length)
-	_, err = r.Read(data)
+	_, err = io.ReadFull(r, data)
 	return
 }

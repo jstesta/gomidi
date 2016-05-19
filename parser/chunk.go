@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"encoding/binary"
 	"io"
 
 	"github.com/jstesta/gomidi/cfg"
@@ -11,10 +10,10 @@ import (
 const HEADER_CHUNK_LITERAL = "MThd"
 const TRACK_CHUNK_LITERAL = "MTrk"
 
-func ReadChunk(b io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
+func ReadChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
 
 	chunkType := make([]byte, 4)
-	err = binary.Read(b, cfg.ByteOrder, chunkType)
+	_, err = io.ReadFull(r, chunkType)
 	if err != nil {
 		return nil, err
 	}
@@ -22,17 +21,17 @@ func ReadChunk(b io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
 	switch string(chunkType) {
 
 	case HEADER_CHUNK_LITERAL:
-		c, err = readHeaderChunk(b, cfg)
+		c, err = readHeaderChunk(r, cfg)
 		cfg.LogContext.Log("chunk", c, "err", err)
 		return
 
 	case TRACK_CHUNK_LITERAL:
-		c, err = readTrackChunk(b, cfg)
+		c, err = readTrackChunk(r, cfg)
 		cfg.LogContext.Log("chunk", c, "err", err)
 		return
 
 	default:
-		err = readAlienChunk(b, cfg)
+		err = readAlienChunk(r, cfg)
 		return nil, err
 
 	}

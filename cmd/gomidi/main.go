@@ -7,16 +7,23 @@ import (
 	"github.com/jstesta/gomidi/cfg"
 	stdlog "log"
 	"os"
+	"flag"
 )
 
 func main() {
+	var (
+		midiFile = flag.String("input", "", "Filesystem location of MIDI file to parse")
+	)
+	flag.Parse()
 
 	logger := kitlog.NewLogfmtLogger(os.Stderr)
 	stdlog.SetOutput(kitlog.NewStdlibAdapter(logger))
 
+	logger.Log("midiFile", midiFile)
+
 	ctx := kitlog.NewContext(logger).WithPrefix("ts", kitlog.DefaultTimestampUTC)
 
-	m, err := gomidi.ReadMidiFromFile("resource/walzamin.mid", cfg.GomidiConfig{
+	m, err := gomidi.ReadMidiFromFile(*midiFile, cfg.GomidiConfig{
 		ByteOrder:  binary.BigEndian,
 		LogContext: ctx,
 	})

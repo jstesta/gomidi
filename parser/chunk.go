@@ -22,17 +22,14 @@ func ReadChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
 
 	case HEADER_CHUNK_LITERAL:
 		c, err = readHeaderChunk(r, cfg)
-		cfg.LogContext.Log("chunk", c, "err", err)
-		return
 
 	case TRACK_CHUNK_LITERAL:
 		c, err = readTrackChunk(r, cfg)
-		cfg.LogContext.Log("chunk", c, "err", err)
-		return
 
 	default:
 		err = readAlienChunk(r, cfg)
-		return nil, err
-
 	}
+
+	cfg.LogContext.Log("chunk", c, "err", err)
+	return
 }

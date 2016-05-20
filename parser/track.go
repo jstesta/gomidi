@@ -172,7 +172,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 					return nil, bytesRead, err
 				}
 				bytesRead += n
-				data = append(data, tmp)
+				data = append(data, tmp[0])
 				mada = tmp[0] != 0xF7
 			}
 			e = midi.NewMidiEvent(deltaTime, status, data)

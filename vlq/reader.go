@@ -15,7 +15,7 @@ import (
 // The maximum allowed VLQ value as defined by the spec
 const MAX = 0x0FFFFFFF
 
-// Read reads a single VLQ value from a bytes.Reader
+// ReadVLQ reads a single VLQ value from a bytes.Reader
 func ReadVLQ(r io.Reader) (n int, read int, err error) {
 
 	mada := true

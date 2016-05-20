@@ -2,8 +2,9 @@ package vlq_test
 
 import (
 	"bytes"
-	"github.com/jstesta/gomidi/vlq"
 	"testing"
+
+	"github.com/jstesta/gomidi/vlq"
 )
 
 var successTests = []struct {

@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/binary"
+	"flag"
+	stdlog "log"
+	"os"
+
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/jstesta/gomidi"
 	"github.com/jstesta/gomidi/cfg"
-	stdlog "log"
-	"os"
-	"flag"
 )
 
 func main() {

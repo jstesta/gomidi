@@ -136,7 +136,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 		switch subStatus {
 
 		case 0x8, 0x9, 0xA, 0xB, 0xE:
-			n, data, err := readSome(r, prefix, 2)
+			n, data, err := readPrefixed(r, prefix, 2)
 			if err != nil {
 				return nil, bytesRead, err
 			}
@@ -144,7 +144,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 			e = midi.NewMidiEvent(deltaTime, status, data)
 
 		case 0xC, 0xD:
-			n, data, err := readSome(r, prefix, 1)
+			n, data, err := readPrefixed(r, prefix, 1)
 			if err != nil {
 				return nil, bytesRead, err
 			}
@@ -155,27 +155,30 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 			ctx.Log("warning", "unexpected channel voice msg")
 		}
 	} else if subStatus == 0xF {
+
 		switch status & 0xF {
 
 		case 0x0:
-			n, w, err := readSome(r, prefix, 1)
+			n, data, err := readPrefixed(r, prefix, 1)
 			if err != nil {
 				return nil, bytesRead, err
 			}
 			bytesRead += n
 
-			mada := w[0] != 0xF7
+			mada := data[0] != 0xF7
 			for mada {
-				n, w, err := readSome(r, prefix, 1)
+				n, tmp, err := readPrefixed(r, prefix, 1)
 				if err != nil {
 					return nil, bytesRead, err
 				}
 				bytesRead += n
-				mada = w[0] != 0xF7
+				data = append(data, tmp)
+				mada = tmp[0] != 0xF7
 			}
+			e = midi.NewMidiEvent(deltaTime, status, data)
 
 		case 0x2:
-			n, data, err := readSome(r, prefix, 2)
+			n, data, err := readPrefixed(r, prefix, 2)
 			if err != nil {
 				return nil, bytesRead, err
 			}
@@ -183,7 +186,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 			e = midi.NewMidiEvent(deltaTime, status, data)
 
 		case 0x3:
-			n, data, err := readSome(r, prefix, 1)
+			n, data, err := readPrefixed(r, prefix, 1)
 			if err != nil {
 				return nil, bytesRead, err
 			}
@@ -192,23 +195,28 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 
 		default:
 			ctx.Log("aaaa", "other")
+			e = midi.NewMidiEvent(deltaTime, status, make([]byte, 0))
 		}
 	} else {
+
 		if prev == nil {
-			return
+			return nil, bytesRead, errors.New("want to assume status, but no previous status exists")
 		}
 
 		if prevMidiEvent, ok := prev.(*midi.MidiEvent); ok {
 			return readMidiEvent(r, deltaTime, prevMidiEvent.Status(), nil, []byte{status}, cfg)
 		}
 
-		ctx.Log("action", "this is bad! fixme")
+		return nil, bytesRead, errors.New("want to assume status, but previous event is not midi")
 	}
 
 	return
 }
 
-func readSome(r io.Reader, prefix []byte, count int) (n int, data []byte, err error) {
+// Create and return a byte array of size=count, using prefix to fill the beginning of the array, and
+// reading any remaining data from the Reader r
+func readPrefixed(r io.Reader, prefix []byte, count int) (n int, data []byte, err error) {
+
 	data = make([]byte, count)
 
 	if prefix == nil {
@@ -218,7 +226,7 @@ func readSome(r io.Reader, prefix []byte, count int) (n int, data []byte, err er
 	} else {
 
 		copy(data, prefix)
-		if len(prefix) == count {
+		if len(prefix) >= count {
 			return
 		}
 

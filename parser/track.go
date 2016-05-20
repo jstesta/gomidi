@@ -7,6 +7,7 @@ import (
 
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
+	"github.com/jstesta/gomidi/util"
 	"github.com/jstesta/gomidi/vlq"
 )
 
@@ -64,7 +65,7 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error)
 			previousEvent = event
 
 		default:
-			event, br, err := readMidiEvent(r, deltaTime, eventType, previousEvent, cfg)
+			event, br, err := readMidiEvent(r, deltaTime, eventType, previousEvent, nil, cfg)
 			if err != nil {
 				return nil, err
 			}
@@ -85,15 +86,12 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error)
 
 func readSysexEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Event, bytesRead int, err error) {
 
-	ctx := cfg.LogContext.With("reader", "sysex")
-
 	length, br, err := vlq.ReadVLQ(r)
 	if err != nil {
 		return
 	}
 	bytesRead += br
 
-	ctx.Log("datalen", length)
 	data := make([]byte, length)
 	_, err = io.ReadFull(r, data)
 	bytesRead += length
@@ -105,8 +103,6 @@ func readSysexEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Ev
 
 func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Event, bytesRead int, err error) {
 
-	ctx := cfg.LogContext.With("reader", "meta")
-
 	b := []byte{0}
 	_, err = io.ReadFull(r, b)
 	if err != nil {
@@ -114,7 +110,6 @@ func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Eve
 	}
 	metaEventType := b[0]
 	bytesRead++
-	ctx.Log("type", metaEventType)
 
 	length, br, err := vlq.ReadVLQ(r)
 	if err != nil {
@@ -122,7 +117,6 @@ func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Eve
 	}
 	bytesRead += br
 
-	ctx.Log("datalen", length)
 	data := make([]byte, length)
 	_, err = io.ReadFull(r, data)
 	bytesRead += length
@@ -132,43 +126,110 @@ func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Eve
 	return
 }
 
-func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, cfg cfg.GomidiConfig) (e midi.Event, bytesRead int, err error) {
+func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, prefix []byte, cfg cfg.GomidiConfig) (e midi.Event, bytesRead int, err error) {
 
-	ctx := cfg.LogContext.With("reader", "midi")
+	subStatus := status >> 4
+	ctx := cfg.LogContext.With("reader", "midi", "status", toolbox.ToBitString(status), "subStatus", toolbox.ToBitString(subStatus))
 
-	switch status >> 4 {
+	if subStatus < 0xF && subStatus >= 0x8 {
 
-	case 0x8, 0x9, 0xA, 0xB, 0xE:
-		data := make([]byte, 2)
-		_, err = io.ReadFull(r, data)
-		if err != nil {
-			return
+		switch subStatus {
+
+		case 0x8, 0x9, 0xA, 0xB, 0xE:
+			n, data, err := readSome(r, prefix, 2)
+			if err != nil {
+				return nil, bytesRead, err
+			}
+			bytesRead += n
+			e = midi.NewMidiEvent(deltaTime, status, data)
+
+		case 0xC, 0xD:
+			n, data, err := readSome(r, prefix, 1)
+			if err != nil {
+				return nil, bytesRead, err
+			}
+			bytesRead += n
+			e = midi.NewMidiEvent(deltaTime, status, data)
+
+		default:
+			ctx.Log("warning", "unexpected channel voice msg")
 		}
-		bytesRead += 2
-		e = midi.NewMidiEvent(deltaTime, status, data)
+	} else if subStatus == 0xF {
+		switch status & 0xF {
 
-	case 0xC, 0xD:
-		data := make([]byte, 1)
-		_, err = io.ReadFull(r, data)
-		if err != nil {
-			return
+		case 0x0:
+			n, w, err := readSome(r, prefix, 1)
+			if err != nil {
+				return nil, bytesRead, err
+			}
+			bytesRead += n
+
+			mada := w[0] != 0xF7
+			for mada {
+				n, w, err := readSome(r, prefix, 1)
+				if err != nil {
+					return nil, bytesRead, err
+				}
+				bytesRead += n
+				mada = w[0] != 0xF7
+			}
+
+		case 0x2:
+			n, data, err := readSome(r, prefix, 2)
+			if err != nil {
+				return nil, bytesRead, err
+			}
+			bytesRead += n
+			e = midi.NewMidiEvent(deltaTime, status, data)
+
+		case 0x3:
+			n, data, err := readSome(r, prefix, 1)
+			if err != nil {
+				return nil, bytesRead, err
+			}
+			bytesRead += n
+			e = midi.NewMidiEvent(deltaTime, status, data)
+
+		default:
+			ctx.Log("aaaa", "other")
 		}
-		bytesRead += 1
-		e = midi.NewMidiEvent(deltaTime, status, data)
-
-	default:
+	} else {
 		if prev == nil {
-			ctx.Log("skipped unknown MIDI event, type", status>>4)
+			return
 		}
 
 		if prevMidiEvent, ok := prev.(*midi.MidiEvent); ok {
-			ctx.Log("no status MIDI event, using previous status of: %X", prevMidiEvent.Status())
-			return readMidiEvent(r, deltaTime, prevMidiEvent.Status(), nil, cfg)
+			return readMidiEvent(r, deltaTime, prevMidiEvent.Status(), nil, []byte{status}, cfg)
 		}
 
-		ctx.Log("this is bad! fixme")
-
+		ctx.Log("action", "this is bad! fixme")
 	}
 
 	return
+}
+
+func readSome(r io.Reader, prefix []byte, count int) (n int, data []byte, err error) {
+	data = make([]byte, count)
+
+	if prefix == nil {
+
+		n, err = io.ReadFull(r, data)
+		return
+	} else {
+
+		copy(data, prefix)
+		if len(prefix) == count {
+			return
+		}
+
+		remaining := count - len(prefix)
+
+		tmp := make([]byte, remaining)
+		n, err = io.ReadFull(r, tmp)
+		if err != nil {
+			return
+		}
+		copy(data[len(prefix):], tmp)
+		return
+	}
 }

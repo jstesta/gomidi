@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/go-kit/kit/log"
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
 	"github.com/jstesta/gomidi/util"
@@ -12,6 +13,14 @@ import (
 )
 
 func ReadTrack(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error) {
+
+	if cfg.ByteOrder == nil {
+		cfg.ByteOrder = binary.BigEndian
+	}
+
+	if cfg.LogContext == nil {
+		cfg.LogContext = log.NewContext(log.NewNopLogger())
+	}
 
 	chunkType := make([]byte, 4)
 	_, err = io.ReadFull(r, chunkType)

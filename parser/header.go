@@ -6,11 +6,20 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-kit/kit/log"
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
 )
 
 func ReadHeader(r io.Reader, cfg cfg.GomidiConfig) (h *midi.Header, err error) {
+
+	if cfg.ByteOrder == nil {
+		cfg.ByteOrder = binary.BigEndian
+	}
+
+	if cfg.LogContext == nil {
+		cfg.LogContext = log.NewContext(log.NewNopLogger())
+	}
 
 	chunkType := make([]byte, 4)
 	_, err = io.ReadFull(r, chunkType)

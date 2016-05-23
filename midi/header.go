@@ -26,7 +26,6 @@ func (h *Header) Division() int {
 }
 
 func (h *Header) String() string {
-
 	return fmt.Sprintf(
 		"Header [Length=%d, Format=%d, NumberOfTracks=%d, Division=%d]",
 		h.Length(),

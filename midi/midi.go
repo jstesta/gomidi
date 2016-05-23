@@ -8,23 +8,27 @@ type Midi struct {
 }
 
 func (m *Midi) NumberOfTracks() int {
-
 	return int(m.header.NumberOfTracks())
 }
 
 func (m *Midi) Division() int {
-
 	return int(m.header.Division())
 }
 
-func NewMidi(h *Header, t []*Track) *Midi {
+func (m *Midi) Header() *Header {
+	return m.header
+}
 
-	return &Midi{h, t}
+func (m *Midi) Tracks() []*Track {
+	return m.tracks
 }
 
 func (m *Midi) String() string {
-
 	return fmt.Sprintf("Midi [Header=%v, Tracks=%v]",
 		m.header,
 		m.tracks)
+}
+
+func NewMidi(h *Header, t []*Track) *Midi {
+	return &Midi{h, t}
 }

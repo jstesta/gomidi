@@ -30,6 +30,6 @@ func ReadChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
 		err = readAlienChunk(r, cfg)
 	}
 
-	cfg.LogContext.Log("chunk", c, "err", err)
+	cfg.LogContext.Log("chunk", c)
 	return
 }

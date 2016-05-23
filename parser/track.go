@@ -13,8 +13,6 @@ import (
 
 func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
 
-	ctx := cfg.LogContext.With("reader", "track")
-
 	var length uint32
 	err = binary.Read(r, cfg.ByteOrder, &length)
 	if err != nil {
@@ -50,7 +48,6 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error)
 				return nil, err
 			}
 			bytesRead += br
-			ctx.Log("event", event)
 			events = append(events, event)
 			previousEvent = event
 
@@ -60,7 +57,6 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error)
 				return nil, err
 			}
 			bytesRead += br
-			ctx.Log("event", event)
 			events = append(events, event)
 			previousEvent = event
 
@@ -70,7 +66,6 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error)
 				return nil, err
 			}
 			bytesRead += br
-			ctx.Log("event", event)
 			events = append(events, event)
 			previousEvent = event
 
@@ -96,7 +91,7 @@ func readSysexEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Ev
 	_, err = io.ReadFull(r, data)
 	bytesRead += length
 
-	e = midi.NewSysexEvent(deltaTime, data)
+	e = midi.NewSysexEvent(deltaTime, length, data)
 
 	return
 }
@@ -119,9 +114,12 @@ func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Eve
 
 	data := make([]byte, length)
 	_, err = io.ReadFull(r, data)
+	if err != nil {
+		return
+	}
 	bytesRead += length
 
-	e = midi.NewMetaEvent(deltaTime, metaEventType, data)
+	e = midi.NewMetaEvent(deltaTime, metaEventType, length, data)
 
 	return
 }
@@ -141,7 +139,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 				return nil, bytesRead, err
 			}
 			bytesRead += n
-			e = midi.NewMidiEvent(deltaTime, status, data)
+			e = midi.NewMidiEvent(deltaTime, status, 2, data)
 
 		case 0xC, 0xD:
 			n, data, err := readPrefixed(r, prefix, 1)
@@ -149,7 +147,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 				return nil, bytesRead, err
 			}
 			bytesRead += n
-			e = midi.NewMidiEvent(deltaTime, status, data)
+			e = midi.NewMidiEvent(deltaTime, status, 1, data)
 
 		default:
 			ctx.Log("warning", "unexpected channel voice msg")
@@ -175,7 +173,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 				data = append(data, tmp[0])
 				mada = tmp[0] != 0xF7
 			}
-			e = midi.NewMidiEvent(deltaTime, status, data)
+			e = midi.NewMidiEvent(deltaTime, status, len(data), data)
 
 		case 0x2:
 			n, data, err := readPrefixed(r, prefix, 2)
@@ -183,7 +181,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 				return nil, bytesRead, err
 			}
 			bytesRead += n
-			e = midi.NewMidiEvent(deltaTime, status, data)
+			e = midi.NewMidiEvent(deltaTime, status, 2, data)
 
 		case 0x3:
 			n, data, err := readPrefixed(r, prefix, 1)
@@ -191,11 +189,10 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 				return nil, bytesRead, err
 			}
 			bytesRead += n
-			e = midi.NewMidiEvent(deltaTime, status, data)
+			e = midi.NewMidiEvent(deltaTime, status, 1, data)
 
 		default:
-			ctx.Log("aaaa", "other")
-			e = midi.NewMidiEvent(deltaTime, status, make([]byte, 0))
+			e = midi.NewMidiEvent(deltaTime, status, 0, make([]byte, 0))
 		}
 	} else {
 

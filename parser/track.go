@@ -11,7 +11,28 @@ import (
 	"github.com/jstesta/gomidi/vlq"
 )
 
-func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
+func ReadTrack(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error) {
+
+	chunkType := make([]byte, 4)
+	_, err = io.ReadFull(r, chunkType)
+	if err != nil {
+		return nil, err
+	}
+
+	switch string(chunkType) {
+
+	case TRACK_CHUNK_LITERAL:
+		return readTrackChunk(r, cfg)
+
+	case HEADER_CHUNK_LITERAL:
+		return nil, errors.New("wanted Track chunk but found Header")
+
+	default:
+		return nil, readAlienChunk(r, cfg)
+	}
+}
+
+func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error) {
 
 	var length uint32
 	err = binary.Read(r, cfg.ByteOrder, &length)

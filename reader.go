@@ -3,7 +3,6 @@ package gomidi
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"io"
 	"io/ioutil"
 
@@ -38,28 +37,25 @@ func ReadMidiFromReader(r io.Reader, cfg cfg.GomidiConfig) (m *midi.Midi, err er
 		cfg.LogContext = log.NewContext(log.NewNopLogger())
 	}
 
-	c, err := parser.ReadChunk(r, cfg)
+	header, err := parser.ReadHeader(r, cfg)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	var tracks []midi.Track
 
-	if header, ok := c.(*midi.Header); ok {
-		tracks = make([]midi.Track, 0, header.NumberOfTracks)
-		var i uint16
-		for i = 0; i < header.NumberOfTracks; i++ {
-			c, err := parser.ReadChunk(r, cfg)
-			if err != nil {
-				return nil, err
-			}
-			if track, ok := c.(*midi.Track); ok {
-				tracks = append(tracks, *track)
-			}
+	tracks = make([]midi.Track, 0, header.NumberOfTracks)
+	var i uint16
+	for i = 0; i < header.NumberOfTracks; i++ {
+		track, err := parser.ReadTrack(r, cfg)
+		if err != nil {
+			return nil, err
 		}
-
-		return midi.NewMidi(header, tracks), nil
+		// track == nil if an alien chunk was found
+		if track != nil {
+			tracks = append(tracks, *track)
+		}
 	}
 
-	return nil, errors.New("invalid midi file")
+	return midi.NewMidi(header, tracks), nil
 }

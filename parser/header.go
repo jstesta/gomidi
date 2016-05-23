@@ -4,13 +4,28 @@ import (
 	"encoding/binary"
 	"io"
 
+	"errors"
+	"fmt"
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
 )
 
-func readHeaderChunk(b io.Reader, cfg cfg.GomidiConfig) (c midi.Chunk, err error) {
+func ReadHeader(r io.Reader, cfg cfg.GomidiConfig) (h *midi.Header, err error) {
 
-	c = new(midi.Header)
-	err = binary.Read(b, cfg.ByteOrder, c)
-	return
+	chunkType := make([]byte, 4)
+	_, err = io.ReadFull(r, chunkType)
+	if err != nil {
+		return
+	}
+
+	switch string(chunkType) {
+
+	case HEADER_CHUNK_LITERAL:
+		h = new(midi.Header)
+		err = binary.Read(r, cfg.ByteOrder, h)
+		return
+
+	default:
+		return nil, errors.New(fmt.Sprintf("wanted Header chunk but found %s", chunkType))
+	}
 }

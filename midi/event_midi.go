@@ -14,7 +14,7 @@ func (e *MidiEvent) DeltaTime() int {
 }
 
 func (e *MidiEvent) Length() int {
-	return e.length;
+	return e.length
 }
 
 func (e *MidiEvent) Data() []byte {

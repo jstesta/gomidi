@@ -18,7 +18,7 @@ func (e *MetaEvent) MetaType() byte {
 }
 
 func (e *MetaEvent) Length() int {
-	return e.length;
+	return e.length
 }
 
 func (e *MetaEvent) Data() []byte {

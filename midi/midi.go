@@ -3,21 +3,21 @@ package midi
 import "fmt"
 
 type Midi struct {
-	Header *Header
-	Tracks []Track
+	header *Header
+	tracks []*Track
 }
 
 func (m *Midi) NumberOfTracks() int {
 
-	return int(m.Header.NumberOfTracks)
+	return int(m.header.NumberOfTracks())
 }
 
 func (m *Midi) Division() int {
 
-	return int(m.Header.Division)
+	return int(m.header.Division())
 }
 
-func NewMidi(h *Header, t []Track) *Midi {
+func NewMidi(h *Header, t []*Track) *Midi {
 
 	return &Midi{h, t}
 }
@@ -25,6 +25,6 @@ func NewMidi(h *Header, t []Track) *Midi {
 func (m *Midi) String() string {
 
 	return fmt.Sprintf("Midi [Header=%v, Tracks=%v]",
-		m.Header,
-		m.Tracks)
+		m.header,
+		m.tracks)
 }

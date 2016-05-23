@@ -97,7 +97,7 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error
 		}
 	}
 
-	return &midi.Track{events}, nil
+	return midi.NewTrack(events), nil
 }
 
 func readSysexEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Event, bytesRead int, err error) {

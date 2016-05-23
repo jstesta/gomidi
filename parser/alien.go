@@ -2,8 +2,9 @@ package parser
 
 import (
 	"encoding/binary"
-	"github.com/jstesta/gomidi/cfg"
 	"io"
+
+	"github.com/jstesta/gomidi/cfg"
 )
 
 func readAlienChunk(r io.Reader, cfg cfg.GomidiConfig) (err error) {

@@ -13,7 +13,7 @@ func (e *SysexEvent) DeltaTime() int {
 }
 
 func (e *SysexEvent) Length() int {
-	return e.length;
+	return e.length
 }
 
 func (e *SysexEvent) Data() []byte {

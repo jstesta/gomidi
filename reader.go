@@ -42,18 +42,18 @@ func ReadMidiFromReader(r io.Reader, cfg cfg.GomidiConfig) (m *midi.Midi, err er
 		return
 	}
 
-	var tracks []midi.Track
+	var tracks []*midi.Track
 
-	tracks = make([]midi.Track, 0, header.NumberOfTracks)
-	var i uint16
-	for i = 0; i < header.NumberOfTracks; i++ {
+	tracks = make([]*midi.Track, 0, header.NumberOfTracks())
+	var i int
+	for i = 0; i < header.NumberOfTracks(); i++ {
 		track, err := parser.ReadTrack(r, cfg)
 		if err != nil {
 			return nil, err
 		}
 		// track == nil if an alien chunk was found
 		if track != nil {
-			tracks = append(tracks, *track)
+			tracks = append(tracks, track)
 		}
 	}
 

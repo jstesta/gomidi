@@ -2,10 +2,10 @@ package parser
 
 import (
 	"encoding/binary"
-	"io"
-
 	"errors"
 	"fmt"
+	"io"
+
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
 )
@@ -21,11 +21,39 @@ func ReadHeader(r io.Reader, cfg cfg.GomidiConfig) (h *midi.Header, err error) {
 	switch string(chunkType) {
 
 	case HEADER_CHUNK_LITERAL:
-		h = new(midi.Header)
-		err = binary.Read(r, cfg.ByteOrder, h)
-		return
+		return readHeaderChunk(r, cfg)
 
 	default:
 		return nil, errors.New(fmt.Sprintf("wanted Header chunk but found %s", chunkType))
 	}
+}
+
+func readHeaderChunk(r io.Reader, cfg cfg.GomidiConfig) (h *midi.Header, err error) {
+
+	var length int32
+	err = binary.Read(r, cfg.ByteOrder, &length)
+	if err != nil {
+		return
+	}
+
+	var format int16
+	err = binary.Read(r, cfg.ByteOrder, &format)
+	if err != nil {
+		return
+	}
+
+	var numberOfTracks int16
+	err = binary.Read(r, cfg.ByteOrder, &numberOfTracks)
+	if err != nil {
+		return
+	}
+
+	var division int16
+	err = binary.Read(r, cfg.ByteOrder, &division)
+	if err != nil {
+		return
+	}
+
+	h = midi.NewHeader(int(length), int(format), int(numberOfTracks), int(division))
+	return
 }

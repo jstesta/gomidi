@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"io"
 	"io/ioutil"
+	"log"
 
-	"github.com/go-kit/kit/log"
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
 	"github.com/jstesta/gomidi/parser"
@@ -33,8 +33,8 @@ func ReadMidiFromReader(r io.Reader, cfg cfg.GomidiConfig) (m *midi.Midi, err er
 		cfg.ByteOrder = binary.BigEndian
 	}
 
-	if cfg.LogContext == nil {
-		cfg.LogContext = log.NewContext(log.NewNopLogger())
+	if cfg.Log == nil {
+		cfg.Log = log.New(ioutil.Discard, "", 0)
 	}
 
 	header, err := parser.ReadHeader(r, cfg)

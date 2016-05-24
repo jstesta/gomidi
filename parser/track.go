@@ -4,8 +4,9 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"io/ioutil"
+	"log"
 
-	"github.com/go-kit/kit/log"
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
 	"github.com/jstesta/gomidi/vlq"
@@ -17,8 +18,8 @@ func ReadTrack(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error) {
 		cfg.ByteOrder = binary.BigEndian
 	}
 
-	if cfg.LogContext == nil {
-		cfg.LogContext = log.NewContext(log.NewNopLogger())
+	if cfg.Log == nil {
+		cfg.Log = log.New(ioutil.Discard, "", 0)
 	}
 
 	chunkType := make([]byte, 4)
@@ -156,7 +157,6 @@ func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Eve
 func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, prefix []byte, cfg cfg.GomidiConfig) (e midi.Event, bytesRead int, err error) {
 
 	subStatus := status >> 4
-	ctx := cfg.LogContext.With("reader", "midi", "status", status, "subStatus", subStatus)
 
 	if subStatus < 0xF && subStatus >= 0x8 {
 
@@ -179,7 +179,7 @@ func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, pre
 			e = midi.NewMidiEvent(deltaTime, status, 1, data)
 
 		default:
-			ctx.Log("warning", "unexpected channel voice msg")
+			cfg.Log.Print("warning: unexpected channel voice msg")
 		}
 	} else if subStatus == 0xF {
 

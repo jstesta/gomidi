@@ -3,10 +3,9 @@ package main
 import (
 	"encoding/binary"
 	"flag"
-	stdlog "log"
+	"log"
 	"os"
 
-	kitlog "github.com/go-kit/kit/log"
 	"github.com/jstesta/gomidi"
 	"github.com/jstesta/gomidi/cfg"
 )
@@ -17,19 +16,15 @@ func main() {
 	)
 	flag.Parse()
 
-	logger := kitlog.NewLogfmtLogger(os.Stderr)
-	stdlog.SetOutput(kitlog.NewStdlibAdapter(logger))
-
-	logger.Log("midiFile", midiFile)
-
-	ctx := kitlog.NewContext(logger).WithPrefix("ts", kitlog.DefaultTimestampUTC)
+	logger := log.New(os.Stdout, "gomidi ", log.LUTC|log.LstdFlags)
+	logger.Printf("midiFile: %v", *midiFile)
 
 	m, err := gomidi.ReadMidiFromFile(*midiFile, cfg.GomidiConfig{
-		ByteOrder:  binary.BigEndian,
-		LogContext: ctx,
+		ByteOrder: binary.BigEndian,
+		Log:       logger,
 	})
 	if err != nil {
-		stdlog.Fatal(err)
+		logger.Fatal(err)
 	}
-	ctx.Log("midi", m)
+	logger.Printf("midi: %v", m)
 }

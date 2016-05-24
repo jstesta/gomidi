@@ -2,11 +2,10 @@ package cfg
 
 import (
 	"encoding/binary"
-
-	"github.com/go-kit/kit/log"
+	"log"
 )
 
 type GomidiConfig struct {
-	ByteOrder  binary.ByteOrder
-	LogContext *log.Context
+	ByteOrder binary.ByteOrder
+	Log       *log.Logger
 }

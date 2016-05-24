@@ -3,8 +3,9 @@ package parser
 import (
 	"encoding/binary"
 	"io"
+	"io/ioutil"
+	"log"
 
-	"github.com/go-kit/kit/log"
 	"github.com/jstesta/gomidi/cfg"
 )
 
@@ -14,8 +15,8 @@ func readAlienChunk(r io.Reader, cfg cfg.GomidiConfig) (err error) {
 		cfg.ByteOrder = binary.BigEndian
 	}
 
-	if cfg.LogContext == nil {
-		cfg.LogContext = log.NewContext(log.NewNopLogger())
+	if cfg.Log == nil {
+		cfg.Log = log.New(ioutil.Discard, "", 0)
 	}
 
 	var length uint32

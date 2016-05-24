@@ -8,7 +8,6 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
-	"github.com/jstesta/gomidi/util"
 	"github.com/jstesta/gomidi/vlq"
 )
 
@@ -157,7 +156,7 @@ func readMetaEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Eve
 func readMidiEvent(r io.Reader, deltaTime int, status byte, prev midi.Event, prefix []byte, cfg cfg.GomidiConfig) (e midi.Event, bytesRead int, err error) {
 
 	subStatus := status >> 4
-	ctx := cfg.LogContext.With("reader", "midi", "status", toolbox.ToBitString(status), "subStatus", toolbox.ToBitString(subStatus))
+	ctx := cfg.LogContext.With("reader", "midi", "status", status, "subStatus", subStatus)
 
 	if subStatus < 0xF && subStatus >= 0x8 {
 

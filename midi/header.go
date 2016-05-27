@@ -6,7 +6,7 @@ type Header struct {
 	length         int
 	format         int
 	numberOfTracks int
-	division       int
+	division       Division
 }
 
 func (h *Header) Length() int {
@@ -21,13 +21,13 @@ func (h *Header) NumberOfTracks() int {
 	return h.numberOfTracks
 }
 
-func (h *Header) Division() int {
+func (h *Header) Division() Division {
 	return h.division
 }
 
 func (h *Header) String() string {
 	return fmt.Sprintf(
-		"Header [Length=%d, Format=%d, NumberOfTracks=%d, Division=%d]",
+		"Header [Length=%d, Format=%d, NumberOfTracks=%d, Division=%v]",
 		h.Length(),
 		h.Format(),
 		h.NumberOfTracks(),
@@ -35,5 +35,14 @@ func (h *Header) String() string {
 }
 
 func NewHeader(l int, f int, n int, d int) *Header {
-	return &Header{l, f, n, d}
+
+	var division Division
+	switch d >> 15 {
+	case 1:
+		division = NewTimeCodeBasedDivision(d)
+	case 0:
+		division = NewMetricalDivision(d)
+	}
+
+	return &Header{l, f, n, division}
 }

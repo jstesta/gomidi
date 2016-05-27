@@ -11,8 +11,8 @@ func (m *Midi) NumberOfTracks() int {
 	return int(m.header.NumberOfTracks())
 }
 
-func (m *Midi) Division() int {
-	return int(m.header.Division())
+func (m *Midi) Division() Division {
+	return m.header.Division()
 }
 
 func (m *Midi) Header() *Header {

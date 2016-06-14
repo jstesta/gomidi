@@ -2,7 +2,6 @@ package gomidi
 
 import (
 	"bytes"
-	"encoding/binary"
 	"io"
 	"io/ioutil"
 	"log"
@@ -27,35 +26,15 @@ func ReadMidiFromBytes(b []byte, cfg cfg.GomidiConfig) (m *midi.Midi, err error)
 	return ReadMidiFromReader(buff, cfg)
 }
 
-func ReadMidiFromReader(r io.Reader, cfg cfg.GomidiConfig) (m *midi.Midi, err error) {
+func ReadMidiFromReader(r io.Reader, c cfg.GomidiConfig) (m *midi.Midi, err error) {
 
-	if cfg.ByteOrder == nil {
-		cfg.ByteOrder = binary.BigEndian
+	if c.ByteOrder == nil {
+		c.ByteOrder = cfg.DefaultByteOrder
 	}
 
-	if cfg.Log == nil {
-		cfg.Log = log.New(ioutil.Discard, "", 0)
+	if c.Log == nil {
+		c.Log = log.New(ioutil.Discard, "", 0)
 	}
 
-	header, err := parser.ReadHeader(r, cfg)
-	if err != nil {
-		return
-	}
-
-	var tracks []*midi.Track
-
-	tracks = make([]*midi.Track, 0, header.NumberOfTracks())
-	var i int
-	for i = 0; i < header.NumberOfTracks(); i++ {
-		track, err := parser.ReadTrack(r, cfg)
-		if err != nil {
-			return nil, err
-		}
-		// track == nil if an alien chunk was found
-		if track != nil {
-			tracks = append(tracks, track)
-		}
-	}
-
-	return midi.NewMidi(header, tracks), nil
+	return parser.ReadMidi(r, c)
 }

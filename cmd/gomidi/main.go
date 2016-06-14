@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"flag"
 	"log"
 	"os"
@@ -16,12 +15,16 @@ func main() {
 	)
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "gomidi ", log.LUTC|log.LstdFlags)
+	f, err := os.Create("out.log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger := log.New(f, "gomidi ", log.LUTC|log.LstdFlags)
+	//logger := log.New(os.Stdout, "gomidi ", log.LUTC|log.LstdFlags)
 	logger.Printf("midiFile: %v", *midiFile)
 
 	m, err := gomidi.ReadMidiFromFile(*midiFile, cfg.GomidiConfig{
-		ByteOrder: binary.BigEndian,
-		Log:       logger,
+		Log: logger,
 	})
 	if err != nil {
 		logger.Fatal(err)

@@ -2,6 +2,16 @@ package midi
 
 import "fmt"
 
+const (
+	MIDI_NOTE_OFF                = iota
+	MIDI_NOTE_ON                 = iota
+	MIDI_POLYPHONIC_KEY_PRESSURE = iota
+	MIDI_CONTROL_CHANGE          = iota
+	MIDI_PROGRAM_CHANGE          = iota
+	MIDI_CHANNEL_PRESSURE        = iota
+	MIDI_PITCH_WHEEL_CHANGE      = iota
+)
+
 type MidiEvent struct {
 	deltaTime int
 	status    byte

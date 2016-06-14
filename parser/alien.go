@@ -3,24 +3,14 @@ package parser
 import (
 	"encoding/binary"
 	"io"
-	"io/ioutil"
-	"log"
 
 	"github.com/jstesta/gomidi/cfg"
 )
 
-func readAlienChunk(r io.Reader, cfg cfg.GomidiConfig) (err error) {
-
-	if cfg.ByteOrder == nil {
-		cfg.ByteOrder = binary.BigEndian
-	}
-
-	if cfg.Log == nil {
-		cfg.Log = log.New(ioutil.Discard, "", 0)
-	}
+func readAlienChunk(r io.Reader, c cfg.GomidiConfig) (err error) {
 
 	var length uint32
-	err = binary.Read(r, cfg.ByteOrder, &length)
+	err = binary.Read(r, c.ByteOrder, &length)
 	if err != nil {
 		return
 	}

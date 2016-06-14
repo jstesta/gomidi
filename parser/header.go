@@ -5,22 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
 )
 
-func ReadHeader(r io.Reader, cfg cfg.GomidiConfig) (h *midi.Header, err error) {
-
-	if cfg.ByteOrder == nil {
-		cfg.ByteOrder = binary.BigEndian
-	}
-
-	if cfg.Log == nil {
-		cfg.Log = log.New(ioutil.Discard, "", 0)
-	}
+func readHeader(r io.Reader, c cfg.GomidiConfig) (h *midi.Header, err error) {
 
 	chunkType := make([]byte, 4)
 	_, err = io.ReadFull(r, chunkType)
@@ -31,39 +21,32 @@ func ReadHeader(r io.Reader, cfg cfg.GomidiConfig) (h *midi.Header, err error) {
 	switch string(chunkType) {
 
 	case HEADER_CHUNK_LITERAL:
-		return readHeaderChunk(r, cfg)
+		return readHeaderChunk(r, c)
 
 	default:
 		return nil, errors.New(fmt.Sprintf("wanted Header chunk but found %s", chunkType))
 	}
 }
 
-func readHeaderChunk(r io.Reader, cfg cfg.GomidiConfig) (h *midi.Header, err error) {
+func readHeaderChunk(r io.Reader, c cfg.GomidiConfig) (h *midi.Header, err error) {
 
-	var length int32
-	err = binary.Read(r, cfg.ByteOrder, &length)
+	type header struct {
+		Length         int32
+		Format         int16
+		NumberOfTracks int16
+		Division       int16
+	}
+
+	var data header
+	err = binary.Read(r, c.ByteOrder, &data)
 	if err != nil {
 		return
 	}
 
-	var format int16
-	err = binary.Read(r, cfg.ByteOrder, &format)
-	if err != nil {
-		return
-	}
-
-	var numberOfTracks int16
-	err = binary.Read(r, cfg.ByteOrder, &numberOfTracks)
-	if err != nil {
-		return
-	}
-
-	var division int16
-	err = binary.Read(r, cfg.ByteOrder, &division)
-	if err != nil {
-		return
-	}
-
-	h = midi.NewHeader(int(length), int(format), int(numberOfTracks), int(division))
+	h = midi.NewHeader(
+		int(data.Length),
+		int(data.Format),
+		int(data.NumberOfTracks),
+		int(data.Division))
 	return
 }

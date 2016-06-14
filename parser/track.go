@@ -4,23 +4,13 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"io/ioutil"
-	"log"
 
 	"github.com/jstesta/gomidi/cfg"
 	"github.com/jstesta/gomidi/midi"
 	"github.com/jstesta/gomidi/vlq"
 )
 
-func ReadTrack(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error) {
-
-	if cfg.ByteOrder == nil {
-		cfg.ByteOrder = binary.BigEndian
-	}
-
-	if cfg.Log == nil {
-		cfg.Log = log.New(ioutil.Discard, "", 0)
-	}
+func readTrack(r io.Reader, c cfg.GomidiConfig) (t *midi.Track, err error) {
 
 	chunkType := make([]byte, 4)
 	_, err = io.ReadFull(r, chunkType)
@@ -31,20 +21,20 @@ func ReadTrack(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error) {
 	switch string(chunkType) {
 
 	case TRACK_CHUNK_LITERAL:
-		return readTrackChunk(r, cfg)
+		return readTrackChunk(r, c)
 
 	case HEADER_CHUNK_LITERAL:
 		return nil, errors.New("wanted Track chunk but found Header")
 
 	default:
-		return nil, readAlienChunk(r, cfg)
+		return nil, readAlienChunk(r, c)
 	}
 }
 
-func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error) {
+func readTrackChunk(r io.Reader, c cfg.GomidiConfig) (t *midi.Track, err error) {
 
 	var length uint32
-	err = binary.Read(r, cfg.ByteOrder, &length)
+	err = binary.Read(r, c.ByteOrder, &length)
 	if err != nil {
 		return
 	}
@@ -73,7 +63,7 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error
 		switch eventType {
 
 		case 0xF0, 0xF7:
-			event, br, err := readSysexEvent(r, deltaTime, cfg)
+			event, br, err := readSysexEvent(r, deltaTime, c)
 			if err != nil {
 				return nil, err
 			}
@@ -82,7 +72,7 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error
 			previousEvent = event
 
 		case 0xFF:
-			event, br, err := readMetaEvent(r, deltaTime, cfg)
+			event, br, err := readMetaEvent(r, deltaTime, c)
 			if err != nil {
 				return nil, err
 			}
@@ -91,7 +81,7 @@ func readTrackChunk(r io.Reader, cfg cfg.GomidiConfig) (c *midi.Track, err error
 			previousEvent = event
 
 		default:
-			event, br, err := readMidiEvent(r, deltaTime, eventType, previousEvent, nil, cfg)
+			event, br, err := readMidiEvent(r, deltaTime, eventType, previousEvent, nil, c)
 			if err != nil {
 				return nil, err
 			}

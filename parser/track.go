@@ -111,7 +111,7 @@ func readSysexEvent(r io.Reader, deltaTime int, cfg cfg.GomidiConfig) (e midi.Ev
 	_, err = io.ReadFull(r, data)
 	bytesRead += length
 
-	e = midi.NewSysexEvent(deltaTime, length, data)
+	e = midi.NewSysexEvent(deltaTime, data[0], length, data[0:])
 
 	return
 }

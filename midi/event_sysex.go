@@ -23,6 +23,7 @@ const (
 
 type SysexEvent struct {
 	deltaTime int
+	status    byte
 	length    int
 	data      []byte
 }
@@ -39,13 +40,18 @@ func (e *SysexEvent) Data() []byte {
 	return e.data
 }
 
+func (e *SysexEvent) Status() byte {
+	return e.status
+}
+
 func (e *SysexEvent) String() string {
-	return fmt.Sprintf("SysexEvent [DeltaTime=%d, Length=%d, Data=%d]",
+	return fmt.Sprintf("SysexEvent [Status=%X, DeltaTime=%d, Length=%d, Data=%d]",
+		e.Status(),
 		e.DeltaTime(),
 		e.Length(),
 		e.Data())
 }
 
-func NewSysexEvent(d int, l int, data []byte) *SysexEvent {
-	return &SysexEvent{d, l, data}
+func NewSysexEvent(d int, s byte, l int, data []byte) *SysexEvent {
+	return &SysexEvent{d, s, l, data}
 }

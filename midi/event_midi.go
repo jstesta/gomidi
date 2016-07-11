@@ -3,13 +3,13 @@ package midi
 import "fmt"
 
 const (
-	MIDI_NOTE_OFF                = iota
-	MIDI_NOTE_ON                 = iota
-	MIDI_POLYPHONIC_KEY_PRESSURE = iota
-	MIDI_CONTROL_CHANGE          = iota
-	MIDI_PROGRAM_CHANGE          = iota
-	MIDI_CHANNEL_PRESSURE        = iota
-	MIDI_PITCH_WHEEL_CHANGE      = iota
+	MIDI_NOTE_OFF                = 0x8
+	MIDI_NOTE_ON                 = 0x9
+	MIDI_POLYPHONIC_KEY_PRESSURE = 0xA
+	MIDI_CONTROL_CHANGE          = 0xB
+	MIDI_PROGRAM_CHANGE          = 0xC
+	MIDI_CHANNEL_PRESSURE        = 0xD
+	MIDI_PITCH_WHEEL_CHANGE      = 0xE
 )
 
 type MidiEvent struct {

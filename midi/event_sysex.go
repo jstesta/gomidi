@@ -3,22 +3,22 @@ package midi
 import "fmt"
 
 const (
-	SYSEX_SYSTEM_EXCLUSIVE      = iota
-	SYSEX_UNDEFINED_1           = iota
-	SYSEX_SONG_POSITION_POINTER = iota
-	SYSEX_SONG_SELECT           = iota
-	SYSEX_UNDEFINED_4           = iota
-	SYSEX_UNDEFINED_5           = iota
-	SYSEX_TUNE_REQUEST          = iota
-	SYSEX_END_OF_EXCLUSIVE      = iota
-	SYSEX_TIMING_CLOCK          = iota
-	SYSEX_UNDEFINED_9           = iota
-	SYSEX_START                 = iota
-	SYSEX_CONTINUE              = iota
-	SYSEX_STOP                  = iota
-	SYSEX_UNDEFINED_13          = iota
-	SYSEX_ACTIVE_SENSING        = iota
-	SYSEX_RESET                 = iota
+	SYSEX_SYSTEM_EXCLUSIVE      = 0xF0
+	SYSEX_UNDEFINED_1           = 0xF1
+	SYSEX_SONG_POSITION_POINTER = 0xF2
+	SYSEX_SONG_SELECT           = 0xF3
+	SYSEX_UNDEFINED_4           = 0xF4
+	SYSEX_UNDEFINED_5           = 0xF5
+	SYSEX_TUNE_REQUEST          = 0xF6
+	SYSEX_END_OF_EXCLUSIVE      = 0xF7
+	SYSEX_TIMING_CLOCK          = 0xF8
+	SYSEX_UNDEFINED_9           = 0xF9
+	SYSEX_START                 = 0xFA
+	SYSEX_CONTINUE              = 0xFB
+	SYSEX_STOP                  = 0xFC
+	SYSEX_UNDEFINED_13          = 0xFD
+	SYSEX_ACTIVE_SENSING        = 0xFE
+	SYSEX_RESET                 = 0xFF
 )
 
 type SysexEvent struct {

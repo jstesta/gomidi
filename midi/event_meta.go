@@ -13,7 +13,10 @@ const (
 	META_LYRIC               = iota
 	META_MARKER              = iota
 	META_CUE_POINT           = iota
+	META_PROGRAM_NAME        = iota
+	META_DEVICE_NAME         = iota
 	META_MIDI_CHANNEL_PREFIX = 0x20
+	META_MIDI_PORT           = 0x21
 	META_END_OF_TRACK        = 0x2F
 	META_SET_TEMPO           = 0x51
 	META_SMPTE_OFFSET        = 0x54
